@@ -1,0 +1,51 @@
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE files
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test and temporary files
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+temp/
+tmp/
+
+# Generated evaluation output
+retrieval_evaluation_results.json
+
+# Uploaded research papers and generated reports
+uploads/
+generated_reports/
+
+# Model and application cache
+.cache/
+
+# Local test PDFs and generated reports
+test_papers/
+test_research_report.pdf
+

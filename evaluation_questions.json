@@ -1,0 +1,33 @@
+
+[
+  {
+    "question": "What is the main objective of the research?",
+    "expected_document": "sample_research_paper_1_student_risk.pdf",
+    "expected_page": 1,
+    "expected_keywords": [
+      "student",
+      "academic risk",
+      "prediction"
+    ]
+  },
+  {
+    "question": "Which machine learning models are compared?",
+    "expected_document": "sample_research_paper_1_student_risk(1).pdf",
+    "expected_page": 1,
+    "expected_keywords": [
+      "machine learning",
+      "models",
+      "comparison"
+    ]
+  },
+  {
+    "question": "What is the purpose of the cost-sensitive approach?",
+    "expected_document": "sample_research_paper_2_early_support(1).pdf",
+    "expected_page": 1,
+    "expected_keywords": [
+      "cost-sensitive",
+      "early academic support",
+      "identification"
+    ]
+  }
+]
