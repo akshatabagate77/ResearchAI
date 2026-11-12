@@ -1,9 +1,10 @@
 
-
 import os
 import re
 import time
 import random
+
+import streamlit as st
 
 from dotenv import load_dotenv
 from google import genai
@@ -11,14 +12,40 @@ from google.genai import types
 
 
 # ---------------------------------------------------------
-# STEP 1: LOAD ENVIRONMENT VARIABLES
+# STEP 1: LOAD ENVIRONMENT VARIABLES AND CONFIGURATION
 # ---------------------------------------------------------
 
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
 
-MODEL_NAME = os.getenv(
+def get_config(name, default=None):
+    """
+    Read configuration from local environment variables
+    or Streamlit Cloud secrets.
+    """
+
+    # First check local .env / environment variables
+    value = os.getenv(name)
+
+    if value and value.strip():
+        return value.strip()
+
+    # Then check Streamlit Cloud secrets
+    try:
+        value = st.secrets.get(name, default)
+
+        if isinstance(value, str):
+            value = value.strip()
+
+        return value if value else default
+
+    except Exception:
+        return default
+
+
+API_KEY = get_config("GEMINI_API_KEY")
+
+MODEL_NAME = get_config(
     "GEMINI_MODEL",
     "gemini-3.6-flash"
 )
@@ -29,16 +56,12 @@ MODEL_NAME = os.getenv(
 # ---------------------------------------------------------
 
 class GeminiQuotaError(Exception):
-    """
-    Raised when Gemini API quota is exhausted.
-    """
+    """Raised when Gemini API quota is exhausted."""
     pass
 
 
 class GeminiResponseError(Exception):
-    """
-    Raised when Gemini returns an invalid or empty response.
-    """
+    """Raised when Gemini returns an invalid or empty response."""
     pass
 
 
@@ -53,8 +76,7 @@ def get_gemini_client():
     """
     Initialize Gemini client only when required.
 
-    This prevents application startup from failing
-    just because the API key is missing.
+    Supports both local .env and Streamlit Cloud secrets.
     """
 
     global _client
@@ -62,12 +84,13 @@ def get_gemini_client():
     if _client is not None:
         return _client
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = API_KEY
 
     if not api_key:
         raise ValueError(
             "Gemini API key not found.\n"
-            "Please add GEMINI_API_KEY to your .env file."
+            "Please configure GEMINI_API_KEY in your "
+            ".env file or Streamlit Cloud secrets."
         )
 
     _client = genai.Client(api_key=api_key)
@@ -82,8 +105,6 @@ def get_gemini_client():
 def is_daily_quota_error(error_message):
     """
     Identify daily or project-level quota exhaustion.
-
-    These errors should not be retried immediately.
     """
 
     message = error_message.lower()
@@ -220,27 +241,19 @@ def generate_answer(
         3. Temporary error retries.
         4. Exponential backoff.
         5. Empty response validation.
-
-    Compatible with:
-        generate_answer(prompt)
     """
 
     if not isinstance(prompt, str) or not prompt.strip():
+        raise ValueError("Prompt cannot be empty.")
 
-        raise ValueError(
-            "Prompt cannot be empty."
-        )
-
-    if not isinstance(max_retries, int) or max_retries < 0:
-
+    if not isinstance(max_retries, int) or isinstance(max_retries, bool) or max_retries < 0:
         raise ValueError(
             "max_retries must be a non-negative integer."
         )
 
-    if max_output_tokens <= 0:
-
+    if not isinstance(max_output_tokens, int) or max_output_tokens <= 0:
         raise ValueError(
-            "max_output_tokens must be greater than zero."
+            "max_output_tokens must be a positive integer."
         )
 
     # Initialize client
@@ -280,7 +293,9 @@ def generate_answer(
                     "Try modifying your prompt."
                 )
 
-            print("ResearchAI: Response generated successfully.")
+            print(
+                "ResearchAI: Response generated successfully."
+            )
 
             return answer.strip()
 
@@ -336,4 +351,3 @@ def generate_answer(
     raise RuntimeError(
         "ResearchAI could not generate a response."
     )
-
