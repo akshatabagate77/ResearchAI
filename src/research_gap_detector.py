@@ -1,4 +1,6 @@
 
+import time
+
 from src.llm import generate_answer
 
 
@@ -97,8 +99,19 @@ def detect_research_gaps(summaries, selected_documents):
     RESEARCH GAP ANALYSIS:
     """
 
-    # STEP 4: Generate the research gap report
+    # STEP 4: Generate the research gap report and measure time
+
+    print("Research gap detection started.")
+    print("Prompt characters:", len(prompt))
+
+    start_time = time.perf_counter()
 
     gap_report = generate_answer(prompt)
+
+    end_time = time.perf_counter()
+
+    print(
+        f"Gemini response time: {end_time - start_time:.2f} seconds"
+    )
 
     return gap_report

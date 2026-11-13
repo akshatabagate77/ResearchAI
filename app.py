@@ -744,6 +744,7 @@ with tab1:
             st.rerun()
 
 
+
 # =========================================================
 # TAB 2: SUMMARIZE
 # =========================================================
@@ -758,9 +759,14 @@ with tab2:
 
     if require_documents():
 
+        st.markdown(
+            "Select the button below to analyze your research collection."
+        )
+
         if st.button(
             "✨ Generate Research Summaries",
-            use_container_width=True
+            use_container_width=True,
+            key="generate_research_summaries"
         ):
 
             try:
@@ -771,6 +777,7 @@ with tab2:
 
                     summaries = summarize_research_papers(
                         st.session_state.all_chunks,
+                        batch_size=8,
                         force_refresh=False
                     )
 
@@ -785,12 +792,21 @@ with tab2:
 
             except Exception as error:
 
-                st.error(f"Summarization failed: {error}")
-                st.exception(error)
+                st.error(
+                    f"Summarization failed: {error}"
+                )
+
+                
 
         if st.session_state.summaries:
 
             st.divider()
+
+            st.subheader("Generated Research Summaries")
+
+            st.caption(
+                f"{len(st.session_state.summaries)} research paper(s) summarized."
+            )
 
             for document_name, summary in (
                 st.session_state.summaries.items()
@@ -802,6 +818,7 @@ with tab2:
                 ):
 
                     st.markdown(summary)
+
 
 
 # =========================================================

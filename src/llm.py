@@ -167,9 +167,6 @@ def is_temporary_error(error_message):
 def extract_retry_delay(error_message):
     """
     Extract retry delay from Gemini error messages.
-
-    Example:
-        retryDelay: '7984s'
     """
 
     match = re.search(
@@ -241,17 +238,26 @@ def generate_answer(
         3. Temporary error retries.
         4. Exponential backoff.
         5. Empty response validation.
+        6. API request timeout.
+        7. Request execution-time measurement.
     """
 
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt cannot be empty.")
 
-    if not isinstance(max_retries, int) or isinstance(max_retries, bool) or max_retries < 0:
+    if (
+        not isinstance(max_retries, int)
+        or isinstance(max_retries, bool)
+        or max_retries < 0
+    ):
         raise ValueError(
             "max_retries must be a non-negative integer."
         )
 
-    if not isinstance(max_output_tokens, int) or max_output_tokens <= 0:
+    if (
+        not isinstance(max_output_tokens, int)
+        or max_output_tokens <= 0
+    ):
         raise ValueError(
             "max_output_tokens must be a positive integer."
         )
@@ -268,6 +274,9 @@ def generate_answer(
                 f"ResearchAI: Generating response using {MODEL_NAME}..."
             )
 
+            # Start measuring API request time
+            request_start = time.perf_counter()
+
             response = client.models.generate_content(
 
                 model=MODEL_NAME,
@@ -278,9 +287,23 @@ def generate_answer(
 
                     temperature=temperature,
 
-                    max_output_tokens=max_output_tokens
+                    max_output_tokens=max_output_tokens,
+
+                    http_options=types.HttpOptions(
+                        timeout=90000
+                    )
 
                 )
+            )
+
+            # Stop measuring API request time
+            request_time = (
+                time.perf_counter() - request_start
+            )
+
+            print(
+                "ResearchAI: Gemini API request completed in "
+                f"{request_time:.2f} seconds."
             )
 
             # Validate response
