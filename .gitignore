@@ -48,4 +48,4 @@ generated_reports/
 # Local test PDFs and generated reports
 test_papers/
 test_research_report.pdf
-
+.coverage
